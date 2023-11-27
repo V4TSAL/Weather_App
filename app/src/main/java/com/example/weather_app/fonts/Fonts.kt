@@ -24,7 +24,7 @@ object Fonts {
         FontFamily(
             Font(
                 R.font.montserrat_variable, variationSettings = FontVariation.Settings(
-                    FontVariation.weight(400),
+                    FontVariation.weight(450),
                     FontVariation.width(30f),
                     FontVariation.slant(-6f)
                 )

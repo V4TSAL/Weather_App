@@ -1,15 +1,18 @@
 package com.example.weather_app.weather
 
+import android.inputmethodservice.Keyboard.Row
 import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -30,6 +33,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.ImageLoader
@@ -63,6 +67,7 @@ fun WeatherUi(viewModel: WeatherViewModel) {
             }
         }
         .build()
+
     var currentImage =
         if (iconInformation.contains("day")) {
             if (iconInformation.contains("clear")) {
@@ -112,7 +117,7 @@ fun WeatherUi(viewModel: WeatherViewModel) {
                     painter = rememberAsyncImagePainter(
                         ImageRequest
                             .Builder(context)
-                            .data(data=currentImage)
+                            .data(data = currentImage)
                             .apply(block = {
                                 size(Size.ORIGINAL)
                             })
@@ -126,6 +131,14 @@ fun WeatherUi(viewModel: WeatherViewModel) {
         ) {
             CurrentWeather(weatherData = weatherData)
             Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                weatherData.value!![0].days[0].description,
+                fontSize = 20.sp,
+                fontFamily = Fonts.boldFontFamily,
+                color = Color.White,
+                textAlign = TextAlign.Center
+                )
+            Spacer(modifier = Modifier.height(16.dp))
             AdditionalWeatherInformation(weatherData = weatherData)
         }
     }
@@ -136,32 +149,55 @@ fun CurrentWeather(weatherData: State<ArrayList<WeatherData>?>) {
     val currentTemperatureCelsius =
         (((weatherData.value!![0].currentConditions.temp) - 32) * 5 / 9).toBigDecimal()
             .setScale(2, RoundingMode.UP).toDouble()
+    val maxTemp = weatherData.value!![0].days[0].tempmax
+    val minTemp = weatherData.value!![0].days[0].tempmin
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
+            .background(color = Color.White.copy(alpha = 0.15f), shape = RoundedCornerShape(12.dp))
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
             .padding(12.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp)
+        ) {
             Text(
                 text = weatherData.value!![0].resolvedAddress,
-                fontSize = 25.sp,
+                fontSize = 20.sp,
                 fontFamily = Fonts.boldFontFamily,
-                color = Color.White
+                color = Color.White,
+                textAlign = TextAlign.Center
             )
             Text(
                 text = " $currentTemperatureCelsius ° C",
-                fontSize = 25.sp,
+                fontSize = 36.sp,
                 fontFamily = Fonts.boldFontFamily,
                 color = Color.White
             )
             Text(
                 text = weatherData.value!![0].currentConditions.conditions,
-                fontSize = 25.sp,
+                fontSize = 20.sp,
                 fontFamily = Fonts.boldFontFamily,
                 color = Color.White
             )
+            Row {
+                Text(
+                    text = "H ${convertToCelsius(maxTemp)} ° C ",
+                    fontSize = 16.sp,
+                    fontFamily = Fonts.normalFontFamily,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "L  ${convertToCelsius(minTemp)} ° C ",
+                    fontSize = 16.sp,
+                    fontFamily = Fonts.normalFontFamily,
+                    color = Color.White
+                )
+            }
         }
     }
 }
@@ -182,74 +218,125 @@ fun AdditionalWeatherInformation(weatherData: State<ArrayList<WeatherData>?>) {
         verticalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier.fillMaxSize()
     ) {
-        Text(
-            text = "Max temperature: ${convertToCelsius(maxTemp)} ° C",
-            fontSize = 22.sp,
-            fontFamily = Fonts.boldFontFamily,
-            color = Color.White
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(36.dp))
+        Row(
+            horizontalArrangement = Arrangement.SpaceAround,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp)
+            ) {
+                showAdditionalInformation(
+                    heading = "Feels like: ",
+                    description = "${convertToCelsius(feelsLike)} ° C "
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp)
+            ) {
+                showAdditionalInformation(
+                    heading = "Cloud cover: ",
+                    description = "$cloudCover %"
+                )
+            }
+        }
 
-        Text(
-            text = "Min temperature: ${convertToCelsius(minTemp)} ° C",
-            fontSize = 22.sp,
-            fontFamily = Fonts.boldFontFamily,
-            color = Color.White
-        )
         Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            horizontalArrangement = Arrangement.SpaceAround,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp)
+            ) {
+                showAdditionalInformation(
+                    heading = "Humidity: ",
+                    description = "${humidity} %"
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp)
+            ) {
+                showAdditionalInformation(
+                    heading = "Solar energy: ",
+                    description = "$solarEnergy"
+                )
+            }
+        }
 
-        Text(
-            text = "Feels like: ${convertToCelsius(feelsLike)} ° C",
-            fontSize = 22.sp,
-            fontFamily = Fonts.boldFontFamily,
-            color = Color.White
-        )
         Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Cloud cover: $cloudCover %",
-            fontSize = 22.sp,
-            fontFamily = Fonts.boldFontFamily,
-            color = Color.White
-        )
+        Row(
+            horizontalArrangement = Arrangement.SpaceAround,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp)
+            ) {
+                showAdditionalInformation(
+                    heading = "UV index: ",
+                    description = "$uvIndex"
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp)
+            ) {
+                showAdditionalInformation(
+                    heading = "Visibility: ",
+                    description = "$visibility Km"
+                )
+            }
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Humidity: $humidity %",
-            fontSize = 22.sp,
-            fontFamily = Fonts.boldFontFamily,
-            color = Color.White
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Solar energy: $solarEnergy",
-            fontSize = 22.sp,
-            fontFamily = Fonts.boldFontFamily,
-            color = Color.White
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "UV index: $uvIndex",
-            fontSize = 22.sp,
-            fontFamily = Fonts.boldFontFamily,
-            color = Color.White
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Visibility: $visibility Km",
-            fontSize = 22.sp,
-            fontFamily = Fonts.boldFontFamily,
-            color = Color.White
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Precipitation probability: $precipitationProbability %",
-            fontSize = 22.sp,
-            fontFamily = Fonts.boldFontFamily,
-            color = Color.White
-        )
+        Row(horizontalArrangement = Arrangement.SpaceAround, modifier = Modifier.fillMaxWidth()) {
+            showAdditionalInformation(
+                heading = "Precipitation probability: ",
+                description = "$precipitationProbability %"
+            )
+
+        }
     }
 }
 
 fun convertToCelsius(temp: Double): Double {
     return ((temp - 32) * 5 / 9).toBigDecimal()
         .setScale(2, RoundingMode.UP).toDouble()
+}
+
+@Composable
+fun showAdditionalInformation(heading: String, description: String) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .background(color = Color.White.copy(alpha = 0.15f), shape = RoundedCornerShape(12.dp))
+            .padding(12.dp)
+    ) {
+        Column {
+            Text(
+                heading,
+                fontSize = 20.sp,
+                fontFamily = Fonts.boldFontFamily,
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
+            Text(description,
+                fontSize = 16.sp,
+                fontFamily = Fonts.normalFontFamily,
+                color = Color.White,
+                textAlign=TextAlign.Center
+                )
+        }
+    }
 }
