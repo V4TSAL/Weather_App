@@ -1,6 +1,7 @@
 # Weather App
 
 Welcome to the Weather App, a simple application that provides weather information from around the world. This app is built using Kotlin and follows the MVVM (Model-View-ViewModel) architectural pattern for a clean and modular codebase.
+Link to download the apk: https://drive.google.com/drive/folders/1cIfOx2xKPN2uPDWu4mn3izpEX-z6tKHs?usp=sharing
 
 ## Features
 
