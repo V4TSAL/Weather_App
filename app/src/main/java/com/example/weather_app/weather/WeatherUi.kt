@@ -1,6 +1,5 @@
 package com.example.weather_app.weather
 
-import android.inputmethodservice.Keyboard.Row
 import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +16,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.livedata.observeAsState
@@ -36,6 +39,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.ImageLoader
 import coil.compose.rememberAsyncImagePainter
 import coil.decode.GifDecoder
@@ -46,17 +50,14 @@ import com.example.composepractise.weather.WeatherViewModel
 import com.example.weather_app.R
 import com.example.weather_app.fonts.Fonts
 import com.example.weather_app.models.WeatherData
+import com.example.weather_app.navgraph.Screen
 import java.math.RoundingMode
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun WeatherUi(viewModel: WeatherViewModel) {
+fun WeatherUi(viewModel: WeatherViewModel,navController: NavController) {
     val weatherData = viewModel.liveApiData.observeAsState()
-    val iconInformation = weatherData.value!![0].currentConditions.icon
-    val keyboardController = LocalSoftwareKeyboardController.current
     val context = LocalContext.current
     val imageLoader = ImageLoader.Builder(context)
         .components {
@@ -67,35 +68,6 @@ fun WeatherUi(viewModel: WeatherViewModel) {
             }
         }
         .build()
-
-    var currentImage =
-        if (iconInformation.contains("day")) {
-            if (iconInformation.contains("clear")) {
-                R.drawable.sunny_beach
-            } else if (iconInformation.contains("cloudy")) {
-                R.drawable.cloudy
-            } else if (iconInformation.contains("snow")) {
-                R.drawable.snow_branch
-            } else if (iconInformation.contains("rainy")) {
-                R.drawable.rain_drops
-            } else {
-                R.drawable.sunny_beach
-            }
-        } else {
-            if (iconInformation.contains("clear")) {
-                R.drawable.stars
-            } else if (iconInformation.contains("cloud")) {
-                R.drawable.cloudy
-            } else if (iconInformation.contains("snow")) {
-                R.drawable.snow_branch
-            } else if (iconInformation.contains("rain")) {
-                R.drawable.rain_drops
-            } else if (iconInformation.contains("fog")) {
-                R.drawable.foggy
-            } else {
-                R.drawable.stars
-            }
-        }
     if (weatherData.value.isNullOrEmpty()) {
         Box(
             modifier = Modifier
@@ -108,6 +80,35 @@ fun WeatherUi(viewModel: WeatherViewModel) {
             )
         }
     } else {
+        val iconInformation = weatherData.value!![0].currentConditions.icon
+        var currentImage =
+            if (iconInformation.contains("day")) {
+                if (iconInformation.contains("clear")) {
+                    R.drawable.sunny_beach
+                } else if (iconInformation.contains("cloudy")) {
+                    R.drawable.cloudy
+                } else if (iconInformation.contains("snow")) {
+                    R.drawable.snow_branch
+                } else if (iconInformation.contains("rainy")) {
+                    R.drawable.rain_drops
+                } else {
+                    R.drawable.sunny_beach
+                }
+            } else {
+                if (iconInformation.contains("clear")) {
+                    R.drawable.stars
+                } else if (iconInformation.contains("cloud")) {
+                    R.drawable.cloudy
+                } else if (iconInformation.contains("snow")) {
+                    R.drawable.snow_branch
+                } else if (iconInformation.contains("rain")) {
+                    R.drawable.rain_drops
+                } else if (iconInformation.contains("fog")) {
+                    R.drawable.foggy
+                } else {
+                    R.drawable.stars
+                }
+            }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -129,6 +130,14 @@ fun WeatherUi(viewModel: WeatherViewModel) {
                 .padding(12.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+            IconButton(
+                modifier = Modifier.align(alignment = Alignment.Start),
+                onClick = {
+                    navController.popBackStack()
+                    navController.navigate(Screen.ChooseLocation.route)
+                }) {
+                Icon(imageVector = Icons.Default.ArrowBack, "", tint = Color.White)
+            }
             CurrentWeather(weatherData = weatherData)
             Spacer(modifier = Modifier.height(16.dp))
             Text(
@@ -137,7 +146,7 @@ fun WeatherUi(viewModel: WeatherViewModel) {
                 fontFamily = Fonts.boldFontFamily,
                 color = Color.White,
                 textAlign = TextAlign.Center
-                )
+            )
             Spacer(modifier = Modifier.height(16.dp))
             AdditionalWeatherInformation(weatherData = weatherData)
         }
@@ -204,8 +213,6 @@ fun CurrentWeather(weatherData: State<ArrayList<WeatherData>?>) {
 
 @Composable
 fun AdditionalWeatherInformation(weatherData: State<ArrayList<WeatherData>?>) {
-    val maxTemp = weatherData.value!![0].days[0].tempmax
-    val minTemp = weatherData.value!![0].days[0].tempmin
     val feelsLike = weatherData.value!![0].days[0].feelslike
     val cloudCover = weatherData.value!![0].days[0].cloudcover
     val humidity = weatherData.value!![0].days[0].humidity
@@ -331,12 +338,13 @@ fun showAdditionalInformation(heading: String, description: String) {
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
-            Text(description,
+            Text(
+                description,
                 fontSize = 16.sp,
                 fontFamily = Fonts.normalFontFamily,
                 color = Color.White,
-                textAlign=TextAlign.Center
-                )
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

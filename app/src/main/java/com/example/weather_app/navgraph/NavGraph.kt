@@ -1,5 +1,6 @@
 package com.example.composepractise.navgraph
 
+import android.content.SharedPreferences
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -9,22 +10,35 @@ import com.example.weather_app.weather.WeatherUi
 import com.example.composepractise.weather.WeatherViewModel
 import com.example.weather_app.navgraph.Screen
 import com.example.weather_app.weather.ChooseLocation
+import com.example.weather_app.weather.CurrentLocation
 
 @Composable
 fun SetUpNavGraph(
     navController: NavHostController,
-    viewModel: WeatherViewModel
+    viewModel: WeatherViewModel,
+    sharedPreferences: SharedPreferences
 ) {
-    NavHost(navController = navController, startDestination = Screen.ChooseLocation.route) {
+    var startDestination = Screen.ChooseLocation.route
+    var currentLocation = sharedPreferences.getString("CURRENT_LOCATION", "")
+    if (!currentLocation.equals("")) {
+        startDestination = Screen.WeatherApp.route
+        CurrentLocation.currentLocation = currentLocation!!
+        viewModel.getWeatherFromApi {}
+    }
+    NavHost(navController = navController, startDestination = startDestination) {
         composable(
-            route= Screen.WeatherApp.route
-        ){
-            WeatherUi(viewModel = viewModel)
+            route = Screen.WeatherApp.route
+        ) {
+            WeatherUi(viewModel = viewModel,navController=navController)
         }
         composable(
-            route= Screen.ChooseLocation.route
-        ){
-            ChooseLocation(navController=navController,viewModel=viewModel)
+            route = Screen.ChooseLocation.route
+        ) {
+            ChooseLocation(
+                navController = navController,
+                viewModel = viewModel,
+                sharedPreferences = sharedPreferences
+            )
         }
     }
 }

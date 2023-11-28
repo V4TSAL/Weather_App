@@ -1,5 +1,6 @@
 package com.example.weather_app
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,13 +20,14 @@ import com.example.weather_app.ui.theme.Weather_AppTheme
 
 class MainActivity : ComponentActivity() {
     lateinit var navController: NavHostController
-    val viewModel: WeatherViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val sharedPreferences=getSharedPreferences("location", Context.MODE_PRIVATE)
+        val viewModel: WeatherViewModel by viewModels()
         setContent {
             Weather_AppTheme {
                     navController= rememberNavController()
-                    SetUpNavGraph(navController = navController, viewModel = viewModel)
+                    SetUpNavGraph(navController = navController, viewModel = viewModel,sharedPreferences=sharedPreferences)
             }
         }
     }

@@ -1,6 +1,8 @@
 package com.example.weather_app.weather
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Build.VERSION.SDK_INT
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -61,7 +63,7 @@ import com.example.weather_app.navgraph.Screen
 @OptIn(ExperimentalComposeUiApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun ChooseLocation(navController: NavController, viewModel: WeatherViewModel) {
+fun ChooseLocation(navController: NavController, viewModel: WeatherViewModel,sharedPreferences: SharedPreferences) {
     var location by remember {
         mutableStateOf("")
     }
@@ -166,6 +168,10 @@ fun ChooseLocation(navController: NavController, viewModel: WeatherViewModel) {
                             keyboardController?.hide()
                             viewModel.getWeatherFromApi {
                                 if (it) {
+                                    sharedPreferences.edit().apply {
+                                        putString("CURRENT_LOCATION",location)
+                                    }.apply()
+                                    navController.popBackStack()
                                     navController.navigate(Screen.WeatherApp.route)
                                 } else {
                                     loader = false
