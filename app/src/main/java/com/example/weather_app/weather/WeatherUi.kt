@@ -2,6 +2,7 @@ package com.example.weather_app.weather
 
 import android.os.Build
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,11 +17,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.livedata.observeAsState
@@ -54,9 +59,9 @@ import com.example.weather_app.navgraph.Screen
 import java.math.RoundingMode
 
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
 @Composable
-fun WeatherUi(viewModel: WeatherViewModel,navController: NavController) {
+fun WeatherUi(viewModel: WeatherViewModel, navController: NavController) {
     val weatherData = viewModel.liveApiData.observeAsState()
     val context = LocalContext.current
     val imageLoader = ImageLoader.Builder(context)
@@ -81,34 +86,7 @@ fun WeatherUi(viewModel: WeatherViewModel,navController: NavController) {
         }
     } else {
         val iconInformation = weatherData.value!![0].currentConditions.icon
-        var currentImage =
-            if (iconInformation.contains("day")) {
-                if (iconInformation.contains("clear")) {
-                    R.drawable.sunny_beach
-                } else if (iconInformation.contains("cloudy")) {
-                    R.drawable.cloudy
-                } else if (iconInformation.contains("snow")) {
-                    R.drawable.snow_branch
-                } else if (iconInformation.contains("rainy")) {
-                    R.drawable.rain_drops
-                } else {
-                    R.drawable.sunny_beach
-                }
-            } else {
-                if (iconInformation.contains("clear")) {
-                    R.drawable.stars
-                } else if (iconInformation.contains("cloud")) {
-                    R.drawable.cloudy
-                } else if (iconInformation.contains("snow")) {
-                    R.drawable.snow_branch
-                } else if (iconInformation.contains("rain")) {
-                    R.drawable.rain_drops
-                } else if (iconInformation.contains("fog")) {
-                    R.drawable.foggy
-                } else {
-                    R.drawable.stars
-                }
-            }
+        var currentImage = getGifForCurrentWeather(iconInformation=iconInformation)
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -130,14 +108,26 @@ fun WeatherUi(viewModel: WeatherViewModel,navController: NavController) {
                 .padding(12.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            IconButton(
-                modifier = Modifier.align(alignment = Alignment.Start),
-                onClick = {
-                    navController.popBackStack()
-                    navController.navigate(Screen.ChooseLocation.route)
-                }) {
-                Icon(imageVector = Icons.Default.ArrowBack, "", tint = Color.White)
+            Row(horizontalArrangement = Arrangement.SpaceBetween,modifier = Modifier.fillMaxWidth()) {
+                IconButton(
+                    onClick = {
+                        navController.popBackStack()
+                        navController.navigate(Screen.ChooseLocation.route)
+                    }) {
+                    Icon(imageVector = Icons.Default.ArrowBack, "", tint = Color.White)
+                }
+                Text(
+                    text = "All locations",
+                    fontSize = 20.sp,
+                    fontFamily = Fonts.boldFontFamily,
+                    color = Color.White,
+                    textAlign = TextAlign.Center,
+                    modifier=Modifier.clickable {
+                        navController.navigate(Screen.AllLocations.route)
+                    }
+                )
             }
+
             CurrentWeather(weatherData = weatherData)
             Spacer(modifier = Modifier.height(16.dp))
             Text(
@@ -150,6 +140,7 @@ fun WeatherUi(viewModel: WeatherViewModel,navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
             AdditionalWeatherInformation(weatherData = weatherData)
         }
+
     }
 }
 

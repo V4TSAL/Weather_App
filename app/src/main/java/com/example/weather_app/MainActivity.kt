@@ -23,7 +23,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val sharedPreferences=getSharedPreferences("location", Context.MODE_PRIVATE)
-        val viewModel: WeatherViewModel by viewModels()
+        var viewModel= WeatherViewModel()
         setContent {
             Weather_AppTheme {
                     navController= rememberNavController()

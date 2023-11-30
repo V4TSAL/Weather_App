@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import com.example.weather_app.weather.WeatherUi
 import com.example.composepractise.weather.WeatherViewModel
 import com.example.weather_app.navgraph.Screen
+import com.example.weather_app.weather.AllLocations
 import com.example.weather_app.weather.ChooseLocation
 import com.example.weather_app.weather.CurrentLocation
 
@@ -20,6 +21,7 @@ fun SetUpNavGraph(
 ) {
     var startDestination = Screen.ChooseLocation.route
     var currentLocation = sharedPreferences.getString("CURRENT_LOCATION", "")
+    var allLocations=sharedPreferences.getStringSet("ALL_LOCATIONS", mutableSetOf<String>())
     if (!currentLocation.equals("")) {
         startDestination = Screen.WeatherApp.route
         CurrentLocation.currentLocation = currentLocation!!
@@ -39,6 +41,11 @@ fun SetUpNavGraph(
                 viewModel = viewModel,
                 sharedPreferences = sharedPreferences
             )
+        }
+        composable(
+            route=Screen.AllLocations.route
+        ){
+            AllLocations(viewModel=viewModel,allLocations= allLocations!!,navController=navController)
         }
     }
 }

@@ -63,7 +63,11 @@ import com.example.weather_app.navgraph.Screen
 @OptIn(ExperimentalComposeUiApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun ChooseLocation(navController: NavController, viewModel: WeatherViewModel,sharedPreferences: SharedPreferences) {
+fun ChooseLocation(
+    navController: NavController,
+    viewModel: WeatherViewModel,
+    sharedPreferences: SharedPreferences
+) {
     var location by remember {
         mutableStateOf("")
     }
@@ -168,8 +172,14 @@ fun ChooseLocation(navController: NavController, viewModel: WeatherViewModel,sha
                             keyboardController?.hide()
                             viewModel.getWeatherFromApi {
                                 if (it) {
+                                    var allLocations = sharedPreferences.getStringSet(
+                                        "ALL_LOCATIONS",
+                                        mutableSetOf<String>()
+                                    )
+                                    allLocations!!.add(location.lowercase())
                                     sharedPreferences.edit().apply {
-                                        putString("CURRENT_LOCATION",location)
+                                        putString("CURRENT_LOCATION", location)
+                                        putStringSet("ALL_LOCATIONS",allLocations)
                                     }.apply()
                                     navController.popBackStack()
                                     navController.navigate(Screen.WeatherApp.route)
