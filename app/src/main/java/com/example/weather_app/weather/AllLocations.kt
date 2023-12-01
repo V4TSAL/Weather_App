@@ -81,7 +81,7 @@ fun AllLocations(
 fun LocationItem(location: String, callback: (viewModel: WeatherViewModel) -> Unit) {
     CurrentLocation.currentLocation = location
     val viewModel = WeatherViewModel()
-//    viewModel.getWeatherFromApi {}
+    viewModel.getWeatherFromApi {}
     val weatherData = viewModel.liveApiData.observeAsState()
     var currentConditions = R.drawable.stars
     if (!weatherData.value.isNullOrEmpty()) {
