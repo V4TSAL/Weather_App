@@ -1,6 +1,7 @@
 package com.example.composepractise.navgraph
 
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -22,6 +23,11 @@ fun SetUpNavGraph(
     var startDestination = Screen.ChooseLocation.route
     var currentLocation = sharedPreferences.getString("CURRENT_LOCATION", "")
     var allLocations=sharedPreferences.getStringSet("ALL_LOCATIONS", mutableSetOf<String>())
+    var temp = sharedPreferences.getStringSet(
+        "ALL_LOCATIONS",
+        mutableSetOf<String>()
+    )
+    Log.d("KJSDGIJSDIG", "ChooseLocation: ${temp}")
     if (!currentLocation.equals("")) {
         startDestination = Screen.WeatherApp.route
         CurrentLocation.currentLocation = currentLocation!!
@@ -45,7 +51,7 @@ fun SetUpNavGraph(
         composable(
             route=Screen.AllLocations.route
         ){
-            AllLocations(viewModel=viewModel,allLocations= allLocations!!,navController=navController)
+            AllLocations(viewModel=viewModel,sharedPreferences=sharedPreferences,navController=navController)
         }
     }
 }

@@ -11,7 +11,7 @@ interface ApiInterface {
     suspend fun getWeather(
         @Path("city") city: String,
         @Query("unitGroup") unitGroup: String = "us",
-        @Query("key") apiKey: String = "NAU7Y5XUHBDNFADE6AXNPDAUU",
+        @Query("key") apiKey: String = "UQA6NEXJLLDYNMRP6B777L4CA",
         @Query("contentType") contentType: String = "json"
     ): Response<WeatherData>
 }

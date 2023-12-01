@@ -1,16 +1,23 @@
 package com.example.weather_app.weather
 
+import android.content.SharedPreferences
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -38,28 +45,47 @@ import com.example.weather_app.fonts.Fonts
 import com.example.weather_app.navgraph.Screen
 
 @Composable
-fun AllLocations(viewModel:WeatherViewModel,allLocations: Set<String>,navController: NavController) {
-    var listOfLocations = allLocations.toList()
-    Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(modifier = Modifier.fillMaxWidth()) {
-            items(listOfLocations.size) {
-                LocationItem(location = listOfLocations[it], callback ={
-                    navController.navigate(Screen.WeatherApp.route)
-                })
+fun AllLocations(
+    viewModel: WeatherViewModel,
+    sharedPreferences: SharedPreferences,
+    navController: NavController
+) {
+    var listOfLocations = sharedPreferences.getStringSet("ALL_LOCATIONS", mutableSetOf<String>())!!.toList()
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color.Black.copy(alpha = 0.8f))
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            IconButton(
+                onClick = {
+                    navController.popBackStack()
+                }) {
+                Icon(imageVector = Icons.Default.ArrowBack, "", tint = Color.White)
+            }
+            LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                items(listOfLocations.size) {
+                    LocationItem(location = listOfLocations[it], callback = {
+                        it.liveApiData.observeForever {
+                            viewModel.liveApiData.value = it
+                        }
+                        navController.popBackStack()
+                    })
+                }
             }
         }
     }
 }
 
 @Composable
-fun LocationItem(location: String,callback:(viewModel:WeatherViewModel)->Unit) {
-    CurrentLocation.currentLocation=location
+fun LocationItem(location: String, callback: (viewModel: WeatherViewModel) -> Unit) {
+    CurrentLocation.currentLocation = location
     val viewModel = WeatherViewModel()
-    viewModel.getWeatherFromApi {}
+//    viewModel.getWeatherFromApi {}
     val weatherData = viewModel.liveApiData.observeAsState()
-    var currentConditions=R.drawable.stars
-    if(!weatherData.value.isNullOrEmpty()){
-        currentConditions= getGifForCurrentWeather(weatherData.value!![0].currentConditions.icon)
+    var currentConditions = R.drawable.stars
+    if (!weatherData.value.isNullOrEmpty()) {
+        currentConditions = getGifForCurrentWeather(weatherData.value!![0].currentConditions.icon)
     }
     val context = LocalContext.current
     val imageLoader = ImageLoader.Builder(context)
@@ -107,7 +133,7 @@ fun LocationItem(location: String,callback:(viewModel:WeatherViewModel)->Unit) {
     }
 }
 
-fun getGifForCurrentWeather(iconInformation:String):Int{
+fun getGifForCurrentWeather(iconInformation: String): Int {
     return if (iconInformation.contains("day")) {
         if (iconInformation.contains("clear")) {
             R.drawable.sunny_beach
@@ -136,3 +162,4 @@ fun getGifForCurrentWeather(iconInformation:String):Int{
         }
     }
 }
+

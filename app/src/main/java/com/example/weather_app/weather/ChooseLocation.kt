@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build.VERSION.SDK_INT
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -179,7 +180,7 @@ fun ChooseLocation(
                                     allLocations!!.add(location.lowercase())
                                     sharedPreferences.edit().apply {
                                         putString("CURRENT_LOCATION", location)
-                                        putStringSet("ALL_LOCATIONS",allLocations)
+                                        putStringSet("ALL_LOCATIONS", allLocations)
                                     }.apply()
                                     navController.popBackStack()
                                     navController.navigate(Screen.WeatherApp.route)
