@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 
 import com.example.weather_app.weather.WeatherUi
 import com.example.composepractise.weather.WeatherViewModel
+import com.example.weather_app.WeatherDao
 import com.example.weather_app.navgraph.Screen
 import com.example.weather_app.weather.AllLocations
 import com.example.weather_app.weather.ChooseLocation
@@ -18,7 +19,8 @@ import com.example.weather_app.weather.CurrentLocation
 fun SetUpNavGraph(
     navController: NavHostController,
     viewModel: WeatherViewModel,
-    sharedPreferences: SharedPreferences
+    sharedPreferences: SharedPreferences,
+    weatherDao: WeatherDao
 ) {
     var startDestination = Screen.ChooseLocation.route
     var currentLocation = sharedPreferences.getString("CURRENT_LOCATION", "")
@@ -45,13 +47,14 @@ fun SetUpNavGraph(
             ChooseLocation(
                 navController = navController,
                 viewModel = viewModel,
-                sharedPreferences = sharedPreferences
+                sharedPreferences = sharedPreferences,
+                weatherDao=weatherDao
             )
         }
         composable(
             route=Screen.AllLocations.route
         ){
-            AllLocations(viewModel=viewModel,sharedPreferences=sharedPreferences,navController=navController)
+            AllLocations(viewModel=viewModel,sharedPreferences=sharedPreferences,navController=navController,weatherDao=weatherDao)
         }
     }
 }

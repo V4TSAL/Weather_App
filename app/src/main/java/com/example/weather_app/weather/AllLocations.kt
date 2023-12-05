@@ -19,7 +19,12 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import coil.ImageLoader
 import coil.compose.rememberAsyncImagePainter
@@ -41,6 +47,8 @@ import coil.request.ImageRequest
 import coil.size.Size
 import com.example.composepractise.weather.WeatherViewModel
 import com.example.weather_app.R
+import com.example.weather_app.WeatherDao
+import com.example.weather_app.WeatherTable
 import com.example.weather_app.fonts.Fonts
 import com.example.weather_app.navgraph.Screen
 
@@ -48,9 +56,14 @@ import com.example.weather_app.navgraph.Screen
 fun AllLocations(
     viewModel: WeatherViewModel,
     sharedPreferences: SharedPreferences,
-    navController: NavController
+    navController: NavController,
+    weatherDao: WeatherDao
 ) {
-    var listOfLocations = sharedPreferences.getStringSet("ALL_LOCATIONS", mutableSetOf<String>())!!.toList()
+    var listOfLocations by remember { mutableStateOf<List<WeatherTable>>(emptyList()) }
+    LaunchedEffect(Unit){
+        listOfLocations = weatherDao.getAllWeatherData()
+    }
+    Log.d("listoflocations", "AllLocations:${listOfLocations} ")
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -65,7 +78,7 @@ fun AllLocations(
             }
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 items(listOfLocations.size) {
-                    LocationItem(location = listOfLocations[it], callback = {
+                    LocationItem(location = listOfLocations[it].location, callback = {
                         it.liveApiData.observeForever {
                             viewModel.liveApiData.value = it
                         }

@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("kotlin-kapt")
 }
 
 android {
@@ -13,7 +14,14 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += mapOf(
+                    "room.schemaLocation" to "$projectDir/schemas",
+                    "room.incremental" to "true"
+                )
+            }
+        }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -71,8 +79,17 @@ dependencies {
 
     // Jetpack Compose Integration
     implementation("androidx.navigation:navigation-compose:$nav_version")
-    // Choose one of the following:
     // Material Design 3
+    val room_version = "2.6.1"
+
+    implementation("androidx.room:room-runtime:$room_version")
+    annotationProcessor("androidx.room:room-compiler:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+
+    // To use Kotlin annotation processing tool (kapt)
+    // To use Kotlin Symbol Processing (KSP)
+
     implementation("androidx.compose.material3:material3")
     // or Material Design 2
     implementation("androidx.compose.material:material")

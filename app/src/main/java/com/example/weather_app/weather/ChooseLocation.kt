@@ -58,6 +58,8 @@ import coil.request.ImageRequest
 import coil.size.Size
 import com.example.composepractise.weather.WeatherViewModel
 import com.example.weather_app.R
+import com.example.weather_app.WeatherDao
+import com.example.weather_app.WeatherTable
 import com.example.weather_app.fonts.Fonts
 import com.example.weather_app.navgraph.Screen
 
@@ -67,7 +69,8 @@ import com.example.weather_app.navgraph.Screen
 fun ChooseLocation(
     navController: NavController,
     viewModel: WeatherViewModel,
-    sharedPreferences: SharedPreferences
+    sharedPreferences: SharedPreferences,
+    weatherDao: WeatherDao
 ) {
     var location by remember {
         mutableStateOf("")
@@ -181,6 +184,7 @@ fun ChooseLocation(
                                     sharedPreferences.edit().apply {
                                         putString("CURRENT_LOCATION", location)
                                         putStringSet("ALL_LOCATIONS", allLocations)
+                                        weatherDao.insertWeather(WeatherTable(location=location))
                                     }.apply()
                                     navController.popBackStack()
                                     navController.navigate(Screen.WeatherApp.route)

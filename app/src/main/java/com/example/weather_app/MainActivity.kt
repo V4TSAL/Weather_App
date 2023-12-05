@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import androidx.room.Room
 import com.example.composepractise.navgraph.SetUpNavGraph
 import com.example.composepractise.weather.WeatherViewModel
 import com.example.weather_app.ui.theme.Weather_AppTheme
@@ -24,10 +25,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val sharedPreferences=getSharedPreferences("location", Context.MODE_PRIVATE)
         val viewModel:WeatherViewModel by viewModels()
+        val db= Room.databaseBuilder(
+            applicationContext,
+            WeatherDatabase::class.java,"weather-database"
+        ).build()
+        val weatherDao=db.dao()
         setContent {
             Weather_AppTheme {
                     navController= rememberNavController()
-                    SetUpNavGraph(navController = navController, viewModel = viewModel,sharedPreferences=sharedPreferences)
+                    SetUpNavGraph(navController = navController, viewModel = viewModel,sharedPreferences=sharedPreferences,weatherDao=weatherDao)
             }
         }
     }
