@@ -1,5 +1,7 @@
 package com.example.weather_app.weather
 
+import android.app.Activity
+import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
@@ -37,7 +39,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import coil.ImageLoader
 import coil.compose.rememberAsyncImagePainter
@@ -47,20 +48,21 @@ import coil.request.ImageRequest
 import coil.size.Size
 import com.example.composepractise.weather.WeatherViewModel
 import com.example.weather_app.R
-import com.example.weather_app.WeatherDao
-import com.example.weather_app.WeatherTable
+import com.example.weather_app.api.WeatherRepository
+import com.example.weather_app.database.WeatherDao
+import com.example.weather_app.database.WeatherTable
 import com.example.weather_app.fonts.Fonts
-import com.example.weather_app.navgraph.Screen
 
 @Composable
 fun AllLocations(
     viewModel: WeatherViewModel,
     sharedPreferences: SharedPreferences,
     navController: NavController,
-    weatherDao: WeatherDao
+    weatherDao: WeatherDao,
+    context: Context
 ) {
     var listOfLocations by remember { mutableStateOf<List<WeatherTable>>(emptyList()) }
-    LaunchedEffect(Unit){
+    LaunchedEffect(Unit) {
         listOfLocations = weatherDao.getAllWeatherData()
     }
     Log.d("listoflocations", "AllLocations:${listOfLocations} ")
@@ -78,12 +80,17 @@ fun AllLocations(
             }
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 items(listOfLocations.size) {
-                    LocationItem(location = listOfLocations[it].location, callback = {
-                        it.liveApiData.observeForever {
-                            viewModel.liveApiData.value = it
-                        }
-                        navController.popBackStack()
-                    })
+                    LocationItem(
+                        location = listOfLocations[it].location,
+                        context = context,
+                        address = listOfLocations[it].weather.resolvedAddress,
+                        callback = {
+                            it.liveApiData.observeForever {
+                                viewModel.liveApiData.value = it
+                            }
+                            navController.popBackStack()
+                        },
+                        weatherDao=weatherDao)
                 }
             }
         }
@@ -91,10 +98,18 @@ fun AllLocations(
 }
 
 @Composable
-fun LocationItem(location: String, callback: (viewModel: WeatherViewModel) -> Unit) {
+fun LocationItem(
+    location: String,
+    context: Context,
+    address: String,
+    callback: (viewModel: WeatherViewModel) -> Unit,
+    weatherDao: WeatherDao
+) {
     CurrentLocation.currentLocation = location
-    val viewModel = WeatherViewModel()
-    viewModel.getWeatherFromApi {}
+    val weatherRepository = WeatherRepository(context,weatherDao)
+    val viewModel = WeatherViewModel(weatherRepository)
+    viewModel.getWeatherFromApi {
+    }
     val weatherData = viewModel.liveApiData.observeAsState()
     var currentConditions = R.drawable.stars
     if (!weatherData.value.isNullOrEmpty()) {
@@ -137,7 +152,7 @@ fun LocationItem(location: String, callback: (viewModel: WeatherViewModel) -> Un
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = location,
+            text = address,
             fontSize = 20.sp,
             fontFamily = Fonts.boldFontFamily,
             color = Color.White,

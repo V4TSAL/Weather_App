@@ -1,13 +1,9 @@
 package com.example.weather_app.weather
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build.VERSION.SDK_INT
-import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -18,18 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.TextFieldColors
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.TopAppBar
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,8 +48,8 @@ import coil.request.ImageRequest
 import coil.size.Size
 import com.example.composepractise.weather.WeatherViewModel
 import com.example.weather_app.R
-import com.example.weather_app.WeatherDao
-import com.example.weather_app.WeatherTable
+import com.example.weather_app.database.WeatherDao
+import com.example.weather_app.database.WeatherTable
 import com.example.weather_app.fonts.Fonts
 import com.example.weather_app.navgraph.Screen
 
@@ -184,7 +174,7 @@ fun ChooseLocation(
                                     sharedPreferences.edit().apply {
                                         putString("CURRENT_LOCATION", location)
                                         putStringSet("ALL_LOCATIONS", allLocations)
-                                        weatherDao.insertWeather(WeatherTable(location=location))
+                                        weatherDao.insertWeather(WeatherTable(location=location,weather= viewModel.liveApiData.value!![0]))
                                     }.apply()
                                     navController.popBackStack()
                                     navController.navigate(Screen.WeatherApp.route)

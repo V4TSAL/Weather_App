@@ -1,4 +1,4 @@
-package com.example.weather_app
+package com.example.weather_app.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
@@ -7,5 +7,5 @@ import androidx.room.RoomDatabase
     version = 1
 )
 abstract class WeatherDatabase: RoomDatabase() {
-    abstract fun dao():WeatherDao
+    abstract fun dao(): WeatherDao
 }

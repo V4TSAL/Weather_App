@@ -1,9 +1,10 @@
-package com.example.weather_app
+package com.example.weather_app.database
 
-import androidx.lifecycle.MutableLiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RawQuery
 import androidx.room.Upsert
+import androidx.sqlite.db.SupportSQLiteQuery
 
 @Dao
 interface WeatherDao {
@@ -11,4 +12,6 @@ interface WeatherDao {
       suspend fun insertWeather(weatherTable: WeatherTable)
     @Query("SELECT * FROM weathertable")
      suspend fun getAllWeatherData(): List<WeatherTable>
+     @RawQuery
+     suspend fun getWeatherForALocation(sqLiteQuery: SupportSQLiteQuery):WeatherTable
 }
