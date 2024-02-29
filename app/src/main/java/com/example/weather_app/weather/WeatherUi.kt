@@ -1,5 +1,6 @@
 package com.example.weather_app.weather
 
+import android.content.Intent
 import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,8 +28,10 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -44,6 +47,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.navigation.NavController
 import coil.ImageLoader
 import coil.compose.rememberAsyncImagePainter
@@ -56,6 +60,9 @@ import com.example.weather_app.R
 import com.example.weather_app.fonts.Fonts
 import com.example.weather_app.models.WeatherData
 import com.example.weather_app.navgraph.Screen
+import com.example.weather_app.services.RunningServices
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.math.RoundingMode
 
 
@@ -63,7 +70,24 @@ import java.math.RoundingMode
 @Composable
 fun WeatherUi(viewModel: WeatherViewModel, navController: NavController) {
     val weatherData = viewModel.liveApiData.observeAsState()
+    CurrentLocationWeather.currentLocation.value =
+        weatherData.value?.get(0)?.resolvedAddress ?: "Not available"
+    CurrentLocationWeather.currentWeather.value = weatherData.value?.get(0)?.currentConditions?.conditions
+        ?: "Not available"
+    CurrentLocationWeather.currentTemperature.value = convertToCelsius(weatherData.value?.get(0)?.currentConditions?.temp ?: 0.0)
     val context = LocalContext.current
+    val manager = GlanceAppWidgetManager(context)
+    val widget = WeatherWidget()
+    LaunchedEffect(Unit){
+        val glanceIds = manager.getGlanceIds(widget.javaClass)
+        glanceIds.forEach{
+            widget.update(context,it)
+        }
+    }
+    Intent(context,RunningServices::class.java).also {
+        it.action = RunningServices.Actions.START.toString()
+        context.startService(it)
+    }
     val imageLoader = ImageLoader.Builder(context)
         .components {
             if (Build.VERSION.SDK_INT >= 28) {
@@ -84,9 +108,10 @@ fun WeatherUi(viewModel: WeatherViewModel, navController: NavController) {
                 modifier = Modifier.align(Alignment.Center)
             )
         }
-    } else {
+    }
+    else {
         val iconInformation = weatherData.value!![0].currentConditions.icon
-        var currentImage = getGifForCurrentWeather(iconInformation=iconInformation)
+        var currentImage = getGifForCurrentWeather(iconInformation = iconInformation)
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -108,7 +133,10 @@ fun WeatherUi(viewModel: WeatherViewModel, navController: NavController) {
                 .padding(12.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            Row(horizontalArrangement = Arrangement.SpaceBetween,modifier = Modifier.fillMaxWidth()) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 IconButton(
                     onClick = {
                         navController.popBackStack()
@@ -122,7 +150,7 @@ fun WeatherUi(viewModel: WeatherViewModel, navController: NavController) {
                     fontFamily = Fonts.boldFontFamily,
                     color = Color.White,
                     textAlign = TextAlign.Center,
-                    modifier=Modifier.clickable {
+                    modifier = Modifier.clickable {
                         navController.navigate(Screen.AllLocations.route)
                     }
                 )

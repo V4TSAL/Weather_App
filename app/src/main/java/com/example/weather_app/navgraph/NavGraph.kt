@@ -22,7 +22,7 @@ fun SetUpNavGraph(
 ) {
     var startDestination = Screen.ChooseLocation.route
     var currentLocation = sharedPreferences.getString("CURRENT_LOCATION", "")
-    var allLocations=sharedPreferences.getStringSet("ALL_LOCATIONS", mutableSetOf<String>())
+    var allLocations = sharedPreferences.getStringSet("ALL_LOCATIONS", mutableSetOf<String>())
     var temp = sharedPreferences.getStringSet(
         "ALL_LOCATIONS",
         mutableSetOf<String>()
@@ -37,7 +37,7 @@ fun SetUpNavGraph(
         composable(
             route = Screen.WeatherApp.route
         ) {
-            WeatherUi(viewModel = viewModel,navController=navController)
+            WeatherUi(viewModel = viewModel, navController = navController)
         }
         composable(
             route = Screen.ChooseLocation.route
@@ -49,9 +49,13 @@ fun SetUpNavGraph(
             )
         }
         composable(
-            route=Screen.AllLocations.route
-        ){
-            AllLocations(viewModel=viewModel,sharedPreferences=sharedPreferences,navController=navController)
+            route = Screen.AllLocations.route
+        ) {
+            AllLocations(
+                viewModel = viewModel,
+                sharedPreferences = sharedPreferences,
+                navController = navController
+            )
         }
     }
 }

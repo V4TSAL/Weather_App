@@ -1,6 +1,8 @@
 package com.example.weather_app
 
+import android.Manifest
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.app.ActivityCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.composepractise.navgraph.SetUpNavGraph
@@ -22,12 +25,22 @@ class MainActivity : ComponentActivity() {
     lateinit var navController: NavHostController
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val sharedPreferences=getSharedPreferences("location", Context.MODE_PRIVATE)
-        val viewModel:WeatherViewModel by viewModels()
+        val sharedPreferences = getSharedPreferences("location", Context.MODE_PRIVATE)
+        val viewModel: WeatherViewModel by viewModels()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                0
+            )
         setContent {
             Weather_AppTheme {
-                    navController= rememberNavController()
-                    SetUpNavGraph(navController = navController, viewModel = viewModel,sharedPreferences=sharedPreferences)
+                navController = rememberNavController()
+                SetUpNavGraph(
+                    navController = navController,
+                    viewModel = viewModel,
+                    sharedPreferences = sharedPreferences
+                )
             }
         }
     }
